@@ -2,7 +2,7 @@ package com.driver.model;
 
 public class User {
 
-    private int aadharCardNo; //This is the unique key that determines a unique user
+    private int aadharCardNo; // This is the unique key that determines a unique user
     private String name;
     private int age;
 
@@ -12,11 +12,11 @@ public class User {
         this.age = age;
     }
 
-    public int getaadharCardNo() {
+    public int getAadharCardNo() {
         return aadharCardNo;
     }
 
-    public void setaadharCardNo(int aadharCardNo) {
+    public void setAadharCardNo(int aadharCardNo) {
         this.aadharCardNo = aadharCardNo;
     }
 

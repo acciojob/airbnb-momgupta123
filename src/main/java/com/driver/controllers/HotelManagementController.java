@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/hotel")
 public class HotelManagementController {
 
+   
     private Map<String, Hotel> hotelDb = new HashMap<>();
     private Map<Integer, Booking> bookingDb = new HashMap<>();
     private Map<Integer, User> userDb = new HashMap<>();
@@ -44,6 +45,7 @@ public class HotelManagementController {
         return "SUCCESS";
     }
 
+
     @PostMapping("/add-user")
     public Integer addUser(@RequestBody User user) {
         int aadharCardNo = user.hashCode();
@@ -53,62 +55,70 @@ public class HotelManagementController {
     }
 
     @GetMapping("/get-hotel-with-most-facilities")
-    public String getHotelWithMostFacilities() {
-        if (hotelDb.isEmpty()) {
-            return "";
-        }
-
-        Hotel hotelWithMostFacilities = hotelDb.values().stream()
-                .max(Comparator.comparingInt(hotel -> hotel.getFacilities().size()))
-                .orElse(null);
-
-        if (hotelWithMostFacilities == null || hotelWithMostFacilities.getFacilities().isEmpty()) {
-            return "";
-        }
-
-        List<Facility> facilities = hotelWithMostFacilities.getFacilities();
-        facilities.sort(Comparator.comparing(Facility::getFacilityName));
-        return hotelWithMostFacilities.getHotelName();
+public Hotel getHotelWithMostFacilities() {
+    if (hotelDb.isEmpty()) {
+        return null;
     }
 
-    @PostMapping("/book-a-room")
-    public int bookARoom(@RequestBody Booking booking) {
-        Hotel hotel = hotelDb.get(booking.getHotelName());
-        if (hotel == null || hotel.getAvailableRooms() < booking.getNumberOfRooms()) {
-            return -1;
-        }
+    Hotel hotelWithMostFacilities = hotelDb.values().stream()
+            .filter(hotel -> !hotel.getFacilities().isEmpty())
+            .max(Comparator.comparingInt(hotel -> hotel.getFacilities().size()))
+            .orElse(null);
 
-        String bookingId = UUID.randomUUID().toString();
-        booking.setBookingId(bookingId);
-        int totalAmountPaid = booking.getNumberOfRooms() * hotel.getPricePerNight();
-        booking.setAmountToBePaid(totalAmountPaid);
+    return hotelWithMostFacilities;
+}
 
-        bookingDb.put(bookingIdCounter, booking);
-        bookingIdCounter++;
 
-        hotel.setAvailableRooms(hotel.getAvailableRooms() - booking.getNumberOfRooms());
-        return totalAmountPaid;
+@PostMapping("/book-a-room")
+public int bookARoom(@RequestBody Booking booking) {
+    Hotel hotel = hotelDb.get(booking.getHotelName());
+    if (hotel == null || hotel.getAvailableRooms() < booking.getNumberOfRooms()) {
+        return -1;
     }
 
-    @GetMapping("/get-bookings-by-a-person/{aadharCard}")
+    String bookingId = UUID.randomUUID().toString();
+    booking.setBookingId(bookingId);
+    int totalAmountPaid = booking.getNumberOfRooms() * hotel.getPricePerNight();
+    booking.setAmountToBePaid(totalAmountPaid);
+
+    bookingDb.put(bookingIdCounter, booking);
+    bookingIdCounter++;
+
+    hotel.setAvailableRooms(hotel.getAvailableRooms() - booking.getNumberOfRooms());
+    return totalAmountPaid;
+}
+
+    
+@GetMapping("/get-bookings-by-a-person/{aadharCard}")
     public List<Booking> getBookings(@PathVariable("aadharCard") Integer aadharCard) {
-        return bookingDb.values().stream()
-                .filter(booking -> booking.getAadharCard() == aadharCard)
+        List<Booking> bookingsByPerson = bookingDb.values().stream()
+                .filter(booking -> booking.getBookingAadharCard() == aadharCard)
                 .collect(Collectors.toList());
+        return bookingsByPerson;
     }
+
+
 
     @PutMapping("/update-facilities")
     public Hotel updateFacilities(@RequestBody List<Facility> newFacilities, String hotelName) {
         Hotel hotel = hotelDb.get(hotelName);
+
         if (hotel != null) {
             List<Facility> existingFacilities = hotel.getFacilities();
+
+            // Add new facilities that the hotel is planning to bring
             for (Facility facility : newFacilities) {
                 if (!existingFacilities.contains(facility)) {
                     existingFacilities.add(facility);
                 }
             }
+
+            // Update the hotel's facilities in the database
             hotelDb.put(hotelName, hotel);
         }
+
         return hotel;
     }
+
+
 }

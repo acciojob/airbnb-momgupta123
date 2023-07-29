@@ -2,29 +2,24 @@ package com.driver.model;
 
 public class Booking {
 
-    private String bookingId; //This will be a random UUID generated String
-
+    private String bookingId; // This will be a random UUID generated String
     private int bookingAadharCard;
-
-    private int noOfRooms;
-
+    private int numberOfRooms; // Added field for the number of rooms
     private String bookingPersonName;
-
     private String hotelName;
-
     private int amountToBePaid;
 
-    public Booking(String bookingId, int bookingAadharCard, int noOfRooms, String bookingPersonName, String hotelName) {
+    public Booking(String bookingId, int bookingAadharCard, int numberOfRooms, String bookingPersonName, String hotelName) {
         this.bookingId = bookingId;
         this.bookingAadharCard = bookingAadharCard;
-        this.noOfRooms = noOfRooms;
+        this.numberOfRooms = numberOfRooms;
         this.bookingPersonName = bookingPersonName;
         this.hotelName = hotelName;
     }
 
-    public Booking(int bookingAadharCard, int noOfRooms, String bookingPersonName, String hotelName) {
+    public Booking(int bookingAadharCard, int numberOfRooms, String bookingPersonName, String hotelName) {
         this.bookingAadharCard = bookingAadharCard;
-        this.noOfRooms = noOfRooms;
+        this.numberOfRooms = numberOfRooms;
         this.bookingPersonName = bookingPersonName;
         this.hotelName = hotelName;
     }
@@ -45,12 +40,12 @@ public class Booking {
         this.bookingAadharCard = bookingAadharCard;
     }
 
-    public int getNoOfRooms() {
-        return noOfRooms;
+    public int getNumberOfRooms() {
+        return numberOfRooms;
     }
 
-    public void setNoOfRooms(int noOfRooms) {
-        this.noOfRooms = noOfRooms;
+    public void setNumberOfRooms(int numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
     }
 
     public String getBookingPersonName() {
