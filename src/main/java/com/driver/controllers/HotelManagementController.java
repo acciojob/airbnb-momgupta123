@@ -4,6 +4,7 @@ import com.driver.model.Booking;
 import com.driver.model.Facility;
 import com.driver.model.Hotel;
 import com.driver.model.User;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +26,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/hotel")
 public class HotelManagementController {
 
-   
     private Map<String, Hotel> hotelDb = new HashMap<>();
     private Map<Integer, Booking> bookingDb = new HashMap<>();
     private Map<Integer, User> userDb = new HashMap<>();
@@ -45,7 +45,6 @@ public class HotelManagementController {
         return "SUCCESS";
     }
 
-
     @PostMapping("/add-user")
     public Integer addUser(@RequestBody User user) {
         int aadharCardNo = user.hashCode();
@@ -55,49 +54,45 @@ public class HotelManagementController {
     }
 
     @GetMapping("/get-hotel-with-most-facilities")
-public Hotel getHotelWithMostFacilities() {
-    if (hotelDb.isEmpty()) {
-        return null;
+    public Hotel getHotelWithMostFacilities() {
+        if (hotelDb.isEmpty()) {
+            return null;
+        }
+
+        Hotel hotelWithMostFacilities = hotelDb.values().stream()
+                .filter(hotel -> !hotel.getFacilities().isEmpty())
+                .max(Comparator.comparingInt(hotel -> hotel.getFacilities().size()))
+                .orElse(null);
+
+        return hotelWithMostFacilities;
     }
 
-    Hotel hotelWithMostFacilities = hotelDb.values().stream()
-            .filter(hotel -> !hotel.getFacilities().isEmpty())
-            .max(Comparator.comparingInt(hotel -> hotel.getFacilities().size()))
-            .orElse(null);
+    @PostMapping("/book-a-room")
+    public int bookARoom(@RequestBody Booking booking) {
+        Hotel hotel = hotelDb.get(booking.getHotelName());
+        if (hotel == null || hotel.getAvailableRooms() < booking.getNumberOfRooms()) {
+            return -1;
+        }
 
-    return hotelWithMostFacilities;
-}
+        String bookingId = UUID.randomUUID().toString();
+        booking.setBookingId(bookingId);
+        int totalAmountPaid = booking.getNumberOfRooms() * hotel.getPricePerNight();
+        booking.setAmountToBePaid(totalAmountPaid);
 
+        bookingDb.put(bookingIdCounter, booking);
+        bookingIdCounter++;
 
-@PostMapping("/book-a-room")
-public int bookARoom(@RequestBody Booking booking) {
-    Hotel hotel = hotelDb.get(booking.getHotelName());
-    if (hotel == null || hotel.getAvailableRooms() < booking.getNumberOfRooms()) {
-        return -1;
+        hotel.setAvailableRooms(hotel.getAvailableRooms() - booking.getNumberOfRooms());
+        return totalAmountPaid;
     }
 
-    String bookingId = UUID.randomUUID().toString();
-    booking.setBookingId(bookingId);
-    int totalAmountPaid = booking.getNumberOfRooms() * hotel.getPricePerNight();
-    booking.setAmountToBePaid(totalAmountPaid);
-
-    bookingDb.put(bookingIdCounter, booking);
-    bookingIdCounter++;
-
-    hotel.setAvailableRooms(hotel.getAvailableRooms() - booking.getNumberOfRooms());
-    return totalAmountPaid;
-}
-
-    
-@GetMapping("/get-bookings-by-a-person/{aadharCard}")
+    @GetMapping("/get-bookings-by-a-person/{aadharCard}")
     public List<Booking> getBookings(@PathVariable("aadharCard") Integer aadharCard) {
         List<Booking> bookingsByPerson = bookingDb.values().stream()
                 .filter(booking -> booking.getBookingAadharCard() == aadharCard)
                 .collect(Collectors.toList());
         return bookingsByPerson;
     }
-
-
 
     @PutMapping("/update-facilities")
     public Hotel updateFacilities(@RequestBody List<Facility> newFacilities, String hotelName) {
@@ -119,6 +114,4 @@ public int bookARoom(@RequestBody Booking booking) {
 
         return hotel;
     }
-
-
 }
